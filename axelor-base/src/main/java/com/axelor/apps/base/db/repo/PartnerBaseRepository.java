@@ -19,31 +19,24 @@
 package com.axelor.apps.base.db.repo;
 
 import com.axelor.apps.base.db.Partner;
-import com.axelor.apps.base.db.PartnerAddress;
-import com.axelor.apps.base.service.MetaFileService;
-import com.axelor.apps.base.service.PartnerService;
 import com.axelor.apps.base.service.exception.TraceBackService;
-import com.axelor.auth.db.User;
-import com.axelor.inject.Beans;
-import com.axelor.meta.db.MetaFile;
-import com.google.common.collect.Lists;
-import java.util.List;
+import com.axelor.apps.base.service.partner.PartnerUtils;
+import com.google.inject.Inject;
 import javax.persistence.PersistenceException;
-import org.apache.commons.collections.CollectionUtils;
 
 public class PartnerBaseRepository extends PartnerRepository {
+
+  private final PartnerUtils partnerUtils;
+
+  @Inject
+  public PartnerBaseRepository(PartnerUtils partnerUtils) {
+    this.partnerUtils = partnerUtils;
+  }
 
   @Override
   public Partner save(Partner partner) {
     try {
-      Beans.get(PartnerService.class).onSave(partner);
-      List<PartnerAddress> partnerAddressList = partner.getPartnerAddressList();
-      if (CollectionUtils.isNotEmpty(partnerAddressList) && partnerAddressList.size() == 1) {
-        PartnerAddress partnerAddress = partnerAddressList.get(0);
-        partnerAddress.setIsDefaultAddr(true);
-        partnerAddress.setIsDeliveryAddr(true);
-        partnerAddress.setIsInvoicingAddr(true);
-      }
+      partnerUtils.handlePartnerOnSave(partner);
       return super.save(partner);
     } catch (Exception e) {
       TraceBackService.traceExceptionFromSaveMethod(e);
@@ -53,40 +46,14 @@ public class PartnerBaseRepository extends PartnerRepository {
 
   @Override
   public Partner copy(Partner partner, boolean deep) {
-
     Partner copy = super.copy(partner, deep);
-
-    copy.setPartnerSeq(null);
-    copy.setEmailAddress(null);
-
-    try {
-      MetaFile picture = copy.getPicture();
-      if (picture != null) {
-        MetaFile pictureCopy = Beans.get(MetaFileService.class).copyMetaFile(picture);
-        copy.setPicture(pictureCopy);
-      }
-    } catch (Exception e) {
-      throw new PersistenceException(e);
-    }
-
-    copy.setPartnerAddressList(Lists.newArrayList());
-    copy.setBlockingList(null);
-    copy.setBankDetailsList(null);
-
+    partnerUtils.handlePartnerCopy(copy);
     return copy;
   }
 
   @Override
   public void remove(Partner partner) {
-    if (partner.getLinkedUser() != null) {
-      UserBaseRepository userRepo = Beans.get(UserBaseRepository.class);
-      User user = userRepo.find(partner.getLinkedUser().getId());
-      if (user != null) {
-        user.setPartner(null);
-        userRepo.save(user);
-      }
-    }
-
+    partnerUtils.handlePartnerRemove(partner);
     super.remove(partner);
   }
 }

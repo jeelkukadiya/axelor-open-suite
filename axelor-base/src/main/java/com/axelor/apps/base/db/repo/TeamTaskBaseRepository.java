@@ -18,50 +18,26 @@
  */
 package com.axelor.apps.base.db.repo;
 
-import com.axelor.apps.base.db.Frequency;
-import com.axelor.apps.base.service.TeamTaskService;
-import com.axelor.i18n.I18n;
-import com.axelor.inject.Beans;
+import com.axelor.apps.base.service.team.TeamTaskUtils;
 import com.axelor.team.db.TeamTask;
 import com.axelor.team.db.repo.TeamTaskRepository;
-import javax.persistence.PersistenceException;
+import com.google.inject.Inject;
 
 public class TeamTaskBaseRepository extends TeamTaskRepository {
 
+  private final TeamTaskUtils teamTaskUtils;
+
+  @Inject
+  public TeamTaskBaseRepository(TeamTaskUtils teamTaskUtils) {
+    this.teamTaskUtils = teamTaskUtils;
+  }
+
   @Override
   public TeamTask save(TeamTask teamTask) {
-    TeamTaskService teamTaskService = Beans.get(TeamTaskService.class);
-
-    if (teamTask.getDoApplyToAllNextTasks()
-        && teamTask.getNextTeamTask() != null
-        && teamTask.getHasDateOrFrequencyChanged()) {
-      // remove next tasks
-      teamTaskService.removeNextTasks(teamTask);
-
-      // regenerate new tasks
-      teamTask.setIsFirst(true);
-    }
-
-    Frequency frequency = teamTask.getFrequency();
-    if (frequency != null && teamTask.getIsFirst() && teamTask.getNextTeamTask() == null) {
-      if (teamTask.getTaskDate() != null) {
-        if (frequency.getEndDate().isBefore(teamTask.getTaskDate())) {
-          throw new PersistenceException(
-              I18n.get("Frequency end date cannot be before task date."));
-        }
-      } else {
-        throw new PersistenceException(I18n.get("Please fill in task date."));
-      }
-
-      teamTaskService.generateTasks(teamTask, frequency);
-    }
-
-    if (teamTask.getDoApplyToAllNextTasks()) {
-      teamTaskService.updateNextTask(teamTask);
-    }
-
-    teamTask.setDoApplyToAllNextTasks(false);
-    teamTask.setHasDateOrFrequencyChanged(false);
+    teamTaskUtils.handleTaskRecurrence(teamTask);
+    teamTaskUtils.validateAndGenerateTasks(teamTask);
+    teamTaskUtils.updateNextTasks(teamTask);
+    teamTaskUtils.resetTaskFlags(teamTask);
 
     return super.save(teamTask);
   }
@@ -69,9 +45,7 @@ public class TeamTaskBaseRepository extends TeamTaskRepository {
   @Override
   public TeamTask copy(TeamTask entity, boolean deep) {
     TeamTask task = super.copy(entity, deep);
-    task.setAssignedTo(null);
-    task.setTaskDate(null);
-    task.setPriority(null);
+    teamTaskUtils.handleTaskCopy(entity, task);
     return task;
   }
 }

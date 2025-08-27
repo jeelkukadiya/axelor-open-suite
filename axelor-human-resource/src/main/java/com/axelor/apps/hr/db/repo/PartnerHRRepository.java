@@ -22,6 +22,7 @@ import com.axelor.apps.account.db.repo.PartnerAccountRepository;
 import com.axelor.apps.account.service.accountingsituation.AccountingSituationCheckService;
 import com.axelor.apps.account.service.accountingsituation.AccountingSituationInitService;
 import com.axelor.apps.base.db.Partner;
+import com.axelor.apps.base.service.partner.PartnerUtils;
 import com.axelor.apps.hr.exception.HumanResourceExceptionMessage;
 import com.axelor.i18n.I18n;
 import com.axelor.studio.app.service.AppService;
@@ -34,8 +35,10 @@ public class PartnerHRRepository extends PartnerAccountRepository {
   public PartnerHRRepository(
       AppService appService,
       AccountingSituationInitService accountingSituationInitService,
-      AccountingSituationCheckService accountingSituationCheckService) {
-    super(appService, accountingSituationInitService, accountingSituationCheckService);
+      AccountingSituationCheckService accountingSituationCheckService,
+      PartnerUtils partnerUtils) {
+    super(
+        appService, accountingSituationInitService, accountingSituationCheckService, partnerUtils);
   }
 
   @Override

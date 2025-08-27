@@ -16,24 +16,25 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package com.axelor.apps.base.db.repo;
+package com.axelor.apps.base.service.product;
 
-import com.axelor.apps.base.db.BankAddress;
-import com.axelor.apps.base.service.BankAddressService;
-import com.google.inject.Inject;
+import com.axelor.apps.base.db.ProductCompany;
+import com.axelor.apps.base.service.ProductService;
+import com.axelor.apps.base.service.app.AppBaseService;
+import com.axelor.inject.Beans;
+import com.google.inject.Singleton;
+import java.util.Map;
 
-public class BankAddressBaseRepository extends BankAddressRepository {
+@Singleton
+public class ProductCompanyUtils {
 
-  private final BankAddressService bankAddressService;
-
-  @Inject
-  public BankAddressBaseRepository(BankAddressService bankAddressService) {
-    this.bankAddressService = bankAddressService;
+  public void populateWithDecimalDigits(Map<String, Object> json) {
+    json.put(
+        "$nbDecimalDigitForUnitPrice",
+        Beans.get(AppBaseService.class).getNbDecimalDigitForUnitPrice());
   }
 
-  @Override
-  public BankAddress save(BankAddress bankAddress) {
-    bankAddress.setFullAddress(bankAddressService.computeFullAddress(bankAddress));
-    return super.save(bankAddress);
+  public void handleProductCompanyCopy(ProductCompany productCompany, ProductCompany copy) {
+    Beans.get(ProductService.class).copyProduct(productCompany, copy);
   }
 }

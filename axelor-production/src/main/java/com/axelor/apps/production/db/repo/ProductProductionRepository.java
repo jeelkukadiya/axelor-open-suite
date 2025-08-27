@@ -19,10 +19,31 @@
 package com.axelor.apps.production.db.repo;
 
 import com.axelor.apps.base.db.Product;
+import com.axelor.apps.base.service.BarcodeGeneratorService;
+import com.axelor.apps.base.service.app.AppBaseService;
+import com.axelor.apps.base.service.observer.ProductFireService;
+import com.axelor.apps.base.service.product.ProductUtils;
 import com.axelor.apps.stock.db.repo.ProductStockRepository;
+import com.axelor.utils.service.TranslationService;
+import com.google.inject.Inject;
 import java.math.BigDecimal;
 
 public class ProductProductionRepository extends ProductStockRepository {
+
+  @Inject
+  public ProductProductionRepository(
+      AppBaseService appBaseService,
+      TranslationService translationService,
+      BarcodeGeneratorService barcodeGeneratorService,
+      ProductFireService productFireService,
+      ProductUtils productUtils) {
+    super(
+        appBaseService,
+        translationService,
+        barcodeGeneratorService,
+        productFireService,
+        productUtils);
+  }
 
   @Override
   public Product copy(Product product, boolean deep) {

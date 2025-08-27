@@ -19,25 +19,29 @@
 package com.axelor.apps.base.db.repo;
 
 import com.axelor.apps.base.db.ProductCompany;
-import com.axelor.apps.base.service.ProductService;
-import com.axelor.apps.base.service.app.AppBaseService;
-import com.axelor.inject.Beans;
+import com.axelor.apps.base.service.product.ProductCompanyUtils;
+import com.google.inject.Inject;
 import java.util.Map;
 
 public class ProductCompanyBaseRepository extends ProductCompanyRepository {
+
+  private final ProductCompanyUtils productCompanyUtils;
+
+  @Inject
+  public ProductCompanyBaseRepository(ProductCompanyUtils productCompanyUtils) {
+    this.productCompanyUtils = productCompanyUtils;
+  }
+
   @Override
   public Map<String, Object> populate(Map<String, Object> json, Map<String, Object> context) {
-    json.put(
-        "$nbDecimalDigitForUnitPrice",
-        Beans.get(AppBaseService.class).getNbDecimalDigitForUnitPrice());
-
+    productCompanyUtils.populateWithDecimalDigits(json);
     return super.populate(json, context);
   }
 
   @Override
   public ProductCompany copy(ProductCompany productCompany, boolean deep) {
     ProductCompany copy = super.copy(productCompany, deep);
-    Beans.get(ProductService.class).copyProduct(productCompany, copy);
+    productCompanyUtils.handleProductCompanyCopy(productCompany, copy);
     return copy;
   }
 }

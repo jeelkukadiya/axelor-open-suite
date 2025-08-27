@@ -21,9 +21,9 @@ package com.axelor.apps.base.db.repo;
 import com.axelor.apps.base.db.Address;
 import com.axelor.apps.base.service.address.AddressService;
 import com.axelor.apps.base.service.address.AddressTemplateService;
+import com.axelor.apps.base.service.address.AddressUtils;
 import com.axelor.apps.base.service.exception.TraceBackService;
 import com.axelor.db.JPA;
-import com.axelor.inject.Beans;
 import com.google.inject.Inject;
 import java.util.Optional;
 import javax.persistence.EntityManager;
@@ -31,7 +31,19 @@ import javax.persistence.PersistenceException;
 
 public class AddressBaseRepository extends AddressRepository {
 
-  @Inject protected AddressService addressService;
+  private final AddressService addressService;
+  private final AddressTemplateService addressTemplateService;
+  private final AddressUtils addressUtils;
+
+  @Inject
+  public AddressBaseRepository(
+      AddressService addressService,
+      AddressTemplateService addressTemplateService,
+      AddressUtils addressUtils) {
+    this.addressService = addressService;
+    this.addressTemplateService = addressTemplateService;
+    this.addressUtils = addressUtils;
+  }
 
   @Override
   public Address save(Address entity) {
@@ -40,13 +52,13 @@ public class AddressBaseRepository extends AddressRepository {
       EntityManager em = JPA.em().getEntityManagerFactory().createEntityManager();
       Address oldAddressObject =
           Optional.ofNullable(entity.getId()).map(id -> em.find(Address.class, id)).orElse(null);
-      if (oldAddressObject == null
-          || !oldAddressObject.getFullName().equals(entity.getFullName())) {
+
+      if (addressUtils.needsLatLongUpdate(oldAddressObject, entity)) {
         addressService.updateLatLong(entity);
       }
-      AddressTemplateService addressTemplateService = Beans.get(AddressTemplateService.class);
+
       addressTemplateService.setFormattedFullName(entity);
-      entity.setFullName(addressService.computeFullName(entity).toUpperCase());
+      entity.setFullName(addressUtils.formatFullName(entity));
       addressTemplateService.checkRequiredAddressFields(entity);
     } catch (Exception e) {
       TraceBackService.traceExceptionFromSaveMethod(e);

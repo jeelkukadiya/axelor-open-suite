@@ -18,44 +18,33 @@
  */
 package com.axelor.apps.base.db.repo;
 
-import com.axelor.app.AppSettings;
-import com.axelor.apps.base.db.Partner;
+import com.axelor.apps.base.AxelorException;
 import com.axelor.apps.base.service.exception.TraceBackService;
-import com.axelor.apps.base.service.user.UserService;
+import com.axelor.apps.base.service.user.UserUtils;
 import com.axelor.auth.db.User;
 import com.axelor.auth.db.repo.UserRepository;
-import com.axelor.common.StringUtils;
 import com.axelor.db.Query;
-import com.axelor.inject.Beans;
+import com.google.inject.Inject;
 import javax.persistence.PersistenceException;
 
 public class UserBaseRepository extends UserRepository {
 
+  private final UserUtils userUtils;
+
+  @Inject
+  public UserBaseRepository(UserUtils userUtils) {
+    this.userUtils = userUtils;
+  }
+
   @Override
   public User save(User user) {
     try {
-      AppSettings appSettings = AppSettings.get();
-      String defaultLanguage = appSettings.get("application.locale");
-      if (user.getId() == null
-          && !(defaultLanguage == null || "".equals(defaultLanguage))
-          && (user.getLanguage() == null || "".contentEquals(user.getLanguage()))) {
-        user.setLanguage(appSettings.get("application.locale"));
-      }
-      if (user.getPartner() != null
-          && user.getPartner().getEmailAddress() != null
-          && StringUtils.notBlank(user.getPartner().getEmailAddress().getAddress())
-          && !user.getPartner().getEmailAddress().getAddress().equals(user.getEmail())) {
-
-        user.setEmail(user.getPartner().getEmailAddress().getAddress());
-      }
-
+      userUtils.handleUserSave(user);
       user = super.save(user);
-
-      if (StringUtils.notBlank(user.getTransientPassword())) {
-        Beans.get(UserService.class).processChangedPassword(user);
-      }
-
       return user;
+    } catch (AxelorException e) {
+      TraceBackService.traceExceptionFromSaveMethod(e);
+      throw new PersistenceException(e.getMessage(), e);
     } catch (Exception e) {
       TraceBackService.traceExceptionFromSaveMethod(e);
       throw new PersistenceException(e.getMessage(), e);
@@ -64,33 +53,14 @@ public class UserBaseRepository extends UserRepository {
 
   @Override
   public User copy(User entity, boolean deep) {
-
     User copy = new User();
-
-    copy.setGroup(entity.getGroup());
-    copy.setRoles(entity.getRoles());
-    copy.setPermissions(entity.getPermissions());
-    copy.setMetaPermissions(entity.getMetaPermissions());
-    copy.setActiveCompany(entity.getActiveCompany());
-    copy.setCompanySet(entity.getCompanySet());
-    copy.setLanguage(entity.getLanguage());
-    copy.setHomeAction(entity.getHomeAction());
-    copy.setSingleTab(entity.getSingleTab());
-    copy.setNoHelp(entity.getNoHelp());
-
+    userUtils.handleUserCopy(entity, copy);
     return super.copy(copy, deep);
   }
 
   @Override
   public void remove(User user) {
-    if (user.getPartner() != null) {
-      PartnerBaseRepository partnerRepo = Beans.get(PartnerBaseRepository.class);
-      Partner partner = partnerRepo.find(user.getPartner().getId());
-      if (partner != null) {
-        partner.setLinkedUser(null);
-        partnerRepo.save(partner);
-      }
-    }
+    userUtils.handleUserRemove(user);
     super.remove(user);
   }
 

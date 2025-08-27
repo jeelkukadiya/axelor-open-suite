@@ -24,6 +24,7 @@ import com.axelor.apps.account.service.accountingsituation.AccountingSituationIn
 import com.axelor.apps.base.db.Partner;
 import com.axelor.apps.base.db.repo.PartnerBaseRepository;
 import com.axelor.apps.base.service.exception.TraceBackService;
+import com.axelor.apps.base.service.partner.PartnerUtils;
 import com.axelor.studio.app.service.AppService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -43,7 +44,9 @@ public class PartnerAccountRepository extends PartnerBaseRepository {
   public PartnerAccountRepository(
       AppService appService,
       AccountingSituationInitService accountingSituationInitService,
-      AccountingSituationCheckService accountingSituationCheckService) {
+      AccountingSituationCheckService accountingSituationCheckService,
+      PartnerUtils partnerUtils) {
+    super(partnerUtils);
     this.appService = appService;
     this.accountingSituationInitService = accountingSituationInitService;
     this.accountingSituationCheckService = accountingSituationCheckService;

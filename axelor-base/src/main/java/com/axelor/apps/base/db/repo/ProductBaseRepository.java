@@ -18,85 +18,57 @@
  */
 package com.axelor.apps.base.db.repo;
 
-import com.axelor.apps.base.db.BarcodeTypeConfig;
 import com.axelor.apps.base.db.Product;
 import com.axelor.apps.base.service.BarcodeGeneratorService;
-import com.axelor.apps.base.service.ProductService;
 import com.axelor.apps.base.service.app.AppBaseService;
 import com.axelor.apps.base.service.exception.TraceBackService;
 import com.axelor.apps.base.service.observer.ProductFireService;
-import com.axelor.inject.Beans;
-import com.axelor.meta.db.MetaFile;
+import com.axelor.apps.base.service.product.ProductUtils;
 import com.axelor.utils.service.TranslationService;
-import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import java.util.Map;
 import javax.persistence.PersistenceException;
 
 public class ProductBaseRepository extends ProductRepository {
 
-  @Inject protected AppBaseService appBaseService;
+  private final AppBaseService appBaseService;
+  private final TranslationService translationService;
+  private final BarcodeGeneratorService barcodeGeneratorService;
+  private final ProductFireService productFireService;
+  private final ProductUtils productUtils;
 
-  @Inject protected TranslationService translationService;
+  @Inject
+  public ProductBaseRepository(
+      AppBaseService appBaseService,
+      TranslationService translationService,
+      BarcodeGeneratorService barcodeGeneratorService,
+      ProductFireService productFireService,
+      ProductUtils productUtils) {
 
-  protected static final String FULL_NAME_FORMAT = "[%s] %s";
-
-  @Inject protected BarcodeGeneratorService barcodeGeneratorService;
-
-  @Inject protected ProductFireService productFireService;
+    this.appBaseService = appBaseService;
+    this.translationService = translationService;
+    this.barcodeGeneratorService = barcodeGeneratorService;
+    this.productFireService = productFireService;
+    this.productUtils = productUtils;
+  }
 
   @Override
   public Product save(Product product) {
     try {
-      if (appBaseService.getAppBase().getGenerateProductSequence()
-          && Strings.isNullOrEmpty(product.getCode())) {
-        product.setCode(Beans.get(ProductService.class).getSequence(product));
-      }
+      productUtils.handleProductSave(
+          product, translationService, appBaseService, barcodeGeneratorService);
+      product = super.save(product);
+      return product;
     } catch (Exception e) {
       TraceBackService.traceExceptionFromSaveMethod(e);
       throw new PersistenceException(e.getMessage(), e);
     }
-
-    product.setFullName(String.format(FULL_NAME_FORMAT, product.getCode(), product.getName()));
-
-    if (product.getId() != null) {
-      Product oldProduct = Beans.get(ProductRepository.class).find(product.getId());
-      translationService.updateFormatedValueTranslations(
-          oldProduct.getFullName(), FULL_NAME_FORMAT, product.getCode(), product.getName());
-    } else {
-      translationService.createFormatedValueTranslations(
-          FULL_NAME_FORMAT, product.getCode(), product.getName());
-    }
-
-    product = super.save(product);
-
-    // Barcode generation
-    if (product.getBarCode() == null
-        && appBaseService.getAppBase().getActivateBarCodeGeneration()) {
-      boolean addPadding = false;
-      BarcodeTypeConfig barcodeTypeConfig = product.getBarcodeTypeConfig();
-      if (!appBaseService.getAppBase().getEditProductBarcodeType()) {
-        barcodeTypeConfig = appBaseService.getAppBase().getBarcodeTypeConfig();
-      }
-      MetaFile barcodeFile =
-          barcodeGeneratorService.createBarCode(
-              product.getId(),
-              "ProductBarCode%d.png",
-              product.getSerialNumber(),
-              barcodeTypeConfig,
-              addPadding);
-      if (barcodeFile != null) {
-        product.setBarCode(barcodeFile);
-      }
-    }
-    return super.save(product);
   }
 
   @Override
   public Product copy(Product product, boolean deep) {
     Product copy = super.copy(product, deep);
-    Beans.get(ProductService.class).copyProduct(product, copy);
-    Beans.get(ProductService.class).copyProductCompanies(product.getProductCompanyList(), copy);
+    productUtils.handleProductCopy(product, copy);
     return copy;
   }
 

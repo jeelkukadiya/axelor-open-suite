@@ -19,10 +19,17 @@
 package com.axelor.apps.production.db.repo;
 
 import com.axelor.apps.base.db.ProductCompany;
+import com.axelor.apps.base.service.product.ProductCompanyUtils;
 import com.axelor.apps.stock.db.repo.ProductCompanyStockRepository;
+import com.google.inject.Inject;
 import java.math.BigDecimal;
 
 public class ProductCompanyProductionRepository extends ProductCompanyStockRepository {
+
+  @Inject
+  public ProductCompanyProductionRepository(ProductCompanyUtils productCompanyUtils) {
+    super(productCompanyUtils);
+  }
 
   @Override
   public ProductCompany copy(ProductCompany productCompany, boolean deep) {

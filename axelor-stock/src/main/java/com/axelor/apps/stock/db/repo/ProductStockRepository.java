@@ -20,13 +20,33 @@ package com.axelor.apps.stock.db.repo;
 
 import com.axelor.apps.base.db.Product;
 import com.axelor.apps.base.db.repo.ProductBaseRepository;
+import com.axelor.apps.base.service.BarcodeGeneratorService;
+import com.axelor.apps.base.service.app.AppBaseService;
+import com.axelor.apps.base.service.observer.ProductFireService;
+import com.axelor.apps.base.service.product.ProductUtils;
 import com.axelor.apps.stock.db.repo.product.ProductStockRepositorySave;
+import com.axelor.utils.service.TranslationService;
 import com.google.inject.Inject;
 import java.math.BigDecimal;
 
 public class ProductStockRepository extends ProductBaseRepository {
 
   @Inject protected ProductStockRepositorySave productStockRepositorySave;
+
+  @Inject
+  public ProductStockRepository(
+      AppBaseService appBaseService,
+      TranslationService translationService,
+      BarcodeGeneratorService barcodeGeneratorService,
+      ProductFireService productFireService,
+      ProductUtils productUtils) {
+    super(
+        appBaseService,
+        translationService,
+        barcodeGeneratorService,
+        productFireService,
+        productUtils);
+  }
 
   @Override
   public Product save(Product product) {
