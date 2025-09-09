@@ -178,6 +178,40 @@ public final class ImportChecks {
     }
   }
 
+  public static boolean entityExistsByField(
+	      String targetEntityFqn, String fieldName, Object fieldValue) {
+	    if (fieldValue == null
+	        || (fieldValue instanceof String && ((String) fieldValue).trim().isEmpty())) {
+	      return true;
+	    }
+
+	    try {
+	      Class<?> raw = Class.forName(targetEntityFqn);
+	      if (!Model.class.isAssignableFrom(raw)) {
+	        System.err.println(
+	            "Error: " + targetEntityFqn + " is not an Axelor Model. Cannot check existence.");
+	        return false;
+	      }
+	      @SuppressWarnings("unchecked")
+	      Class<? extends Model> targetEntity = (Class<? extends Model>) raw.asSubclass(Model.class);
+
+	      String whereClause = "self." + fieldName + " = :value";
+	      Query<? extends Model> query =
+	          JPA.all(targetEntity).filter(whereClause).bind("value", fieldValue);
+
+	      return query.count() > 0;
+	    } catch (Throwable t) {
+	      System.err.println(
+	          "Error checking existence for "
+	              + targetEntityFqn
+	              + "."
+	              + fieldName
+	              + ": "
+	              + t.getMessage());
+	      return false;
+	    }
+	  }
+
   public static boolean isResolvedIfProvided(Object csvRawValue, Object relationBean) {
     if (csvRawValue == null) return true;
     String s = csvRawValue.toString().trim();
