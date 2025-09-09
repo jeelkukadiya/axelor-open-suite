@@ -1,0 +1,7 @@
+"importId";"name";"code";"isActive";"categorySelect";"country_alpha3Code"
+"1";"Test A";"CODE001";"true";"CATEGORY_A";"FRA"
+"2";"Test B";"CODE002";"false";"CATEGORY_B";"ZAF"
+"3";"Test C";"CODE001";"true";"CATEGORY_C";"FRA" 
+"4";"Test D";"CODE004";"true";"CATEGORY_C";"ZAF" 
+"5";"Test E";"CODE006";"true";"CATEGORY_A";"FRA" 
+"6";"Test F";"CODE005";"true";"CATEGORY_A";"IND"  

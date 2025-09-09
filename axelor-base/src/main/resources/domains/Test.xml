@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domain-models xmlns="http://axelor.com/xml/ns/domain-models"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/domain-models http://axelor.com/xml/ns/domain-models/domain-models_7.4.xsd">
+
+  <module name="base" package="com.axelor.apps.base.db"/>
+
+  <entity name="Test">
+
+    <string name="name" title="Test Name" required="true"/>
+    <string name="code" title="Test Code" required="true"/>
+    <boolean name="isActive" title="Is Active"/>
+
+    <string name="categorySelect" title="Category" selection="test.category.select"/>
+
+    <many-to-one name="relatedCountry" ref="Country" title="Related Country"
+      required="true"/>
+
+    <one-to-many name="testLines" ref="TestLine" mappedBy="parentTest"
+      title="Test Lines"/>
+
+    <unique-constraint columns="name,code"/>
+  </entity>
+
+  <enum name="TestCategorySelect">
+    <item name="CATEGORY_A" title="Category A"/>
+    <item name="CATEGORY_B" title="Category B"/>
+    <item name="CATEGORY_C" title="Category C"/>
+  </enum>
+
+</domain-models>

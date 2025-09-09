@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<csv-inputs xmlns="http://axelor.com/xml/ns/data-import"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/data-import http://axelor.com/xml/ns/data-import/data-import_7.4.xsd">
+
+  <input file="base_test.csv" separator=";" type="com.axelor.apps.base.db.Test"
+    search="self.importId = :importId">
+    
+    <bind to="name" column="name"
+      check="com.axelor.csv.script.ImportChecks.present(name)"
+      check-message="Test Name is required"/>
+    <bind to="code" column="code"
+      check="com.axelor.csv.script.ImportChecks.present(code) &amp;&amp; com.axelor.csv.script.ImportChecks.isUnique('com.axelor.apps.base.db.Test', new String[]{'name', 'code'}, new Object[]{name, code}, importId)"
+      check-message="Test Code is required and the combination of Name and Code must be unique"/>
+    <bind to="relatedCountry" column="country_alpha3Code"
+      search="self.alpha3Code = :country_alpha3Code"
+      check="com.axelor.csv.script.ImportChecks.present(country_alpha3Code)"
+      check-message="Related Country must be provided in CSV"/>
+    <bind to="isActive" column="isActive"
+      check="com.axelor.csv.script.ImportChecks.isBooleanText(isActive)"
+      check-message="Is Active must be 'true' or 'false'"/>
+    <bind to="categorySelect" column="categorySelect"
+      check="com.axelor.csv.script.ImportChecks.inSelection('com.axelor.apps.base.db.Test', 'categorySelect', categorySelect, false)"
+      check-message="Category must be one of the defined selections (e.g., CATEGORY_A, CATEGORY_B, CATEGORY_C)"/>
+  
+  </input>
+
+</csv-inputs>
