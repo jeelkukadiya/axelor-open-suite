@@ -3,7 +3,6 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://axelor.com/xml/ns/object-views http://axelor.com/xml/ns/object-views/object-views_7.4.xsd">
 
-  <!-- Test Grid View -->
   <grid name="test-grid" title="Tests" model="com.axelor.apps.base.db.Test">
     <field name="name"/>
     <field name="code"/>
@@ -12,7 +11,6 @@
     <field name="relatedCountry"/>
   </grid>
 
-  <!-- Test Form View -->
   <form name="test-form" title="Test" model="com.axelor.apps.base.db.Test">
     <panel name="mainPanel">
       <field name="name"/>
@@ -25,13 +23,11 @@
       grid-view="test-line-grid" form-view="test-line-form"/>
   </form>
 
-  <!-- TestLine Grid View -->
   <grid name="test-line-grid" title="Test Lines" model="com.axelor.apps.base.db.TestLine">
     <field name="lineNumber"/>
     <field name="description"/>
   </grid>
 
-  <!-- TestLine Form View -->
   <form name="test-line-form" title="Test Line" model="com.axelor.apps.base.db.TestLine">
     <panel name="mainPanel">
       <field name="lineNumber"/>

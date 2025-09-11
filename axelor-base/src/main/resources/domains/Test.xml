@@ -22,10 +22,4 @@
     <unique-constraint columns="name,code"/>
   </entity>
 
-  <enum name="TestCategorySelect">
-    <item name="CATEGORY_A" title="Category A"/>
-    <item name="CATEGORY_B" title="Category B"/>
-    <item name="CATEGORY_C" title="Category C"/>
-  </enum>
-
 </domain-models>

@@ -818,4 +818,10 @@
     <option value="1">Active trading name</option>
   </selection>
 
+  <selection name="test.category.select">
+    <option value="CATEGORY_A">Category A</option>
+    <option value="CATEGORY_B">Category B</option>
+    <option value="CATEGORY_C">Category C</option>
+  </selection>
+
 </object-views>
