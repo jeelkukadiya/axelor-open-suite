@@ -26,13 +26,14 @@ import com.axelor.db.mapper.Property;
 import com.axelor.meta.db.MetaSelectItem;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.CollectionUtils;
 
 public final class ImportChecks {
 
   private ImportChecks() {}
 
   public static boolean isValuePresent(Object value) {
-	  return value != null && !value.toString().trim().isEmpty();
+    return value != null && !value.toString().trim().isEmpty();
   }
 
   public static boolean checkSelection(String entityFqn, String fieldName, Object value) {
@@ -41,12 +42,11 @@ public final class ImportChecks {
       Property prop = Mapper.of(entity).getProperty(fieldName);
 
       if (prop == null) {
-        return true;
+        return false;
       }
 
       boolean isRequired = prop.isRequired();
-      boolean valuePresent = isValuePresent(value);
-      if (!valuePresent) {
+      if (!isValuePresent(value)) {
         return !isRequired;
       }
 
@@ -61,7 +61,7 @@ public final class ImportChecks {
               .bind("name", selectionName)
               .fetch();
 
-      if (items == null || items.isEmpty()) {
+      if (CollectionUtils.isEmpty(items)) {
         return false;
       }
 
@@ -90,7 +90,11 @@ public final class ImportChecks {
   }
 
   public static boolean checkUnique(
-      String entityFqn, String[] fieldNames, Object[] fieldValues, Object csvImportId) {
+      String entityFqn,
+      String[] fieldNames,
+      Object[] fieldValues,
+      String exclusionFieldName,
+      Object exclusionFieldValue) {
     if (fieldNames == null
         || fieldValues == null
         || fieldNames.length == 0
@@ -105,7 +109,7 @@ public final class ImportChecks {
       @SuppressWarnings("unchecked")
       Class<? extends Model> entity = (Class<? extends Model>) raw;
 
-      Long excludeId = getIdForImportId(entity, csvImportId);
+      Long excludeId = getIdForExclusion(entity, exclusionFieldName, exclusionFieldValue);
 
       StringBuilder where = new StringBuilder();
       Map<String, Object> binds = new HashMap<>();
@@ -116,21 +120,7 @@ public final class ImportChecks {
         String param = "p" + i;
 
         if (i > 0) where.append(" AND ");
-
-        if (!isValuePresent(val)) {
-          where.append("self.").append(field).append(" IS NULL");
-        } else if (val instanceof Model) {
-          Model m = (Model) val;
-          if (m.getId() != null) {
-            where.append("self.").append(field).append(".id = :").append(param);
-            binds.put(param, m.getId());
-          } else {
-            where.append("self.").append(field).append(" IS NULL");
-          }
-        } else {
-          where.append("self.").append(field).append(" = :").append(param);
-          binds.put(param, val);
-        }
+        where.append(buildFieldClause(field, val, param, binds));
       }
 
       if (excludeId != null) {
@@ -150,11 +140,41 @@ public final class ImportChecks {
     }
   }
 
-  private static Long getIdForImportId(Class<? extends Model> entity, Object csvImportId) {
-    if (!isValuePresent(csvImportId)) return null;
+
+  private static String buildFieldClause(
+      String fieldName, Object fieldValue, String paramName, Map<String, Object> binds) {
+    if (!isValuePresent(fieldValue)) {
+      return "self." + fieldName + " IS NULL";
+    } else if (fieldValue instanceof Model) {
+      Model m = (Model) fieldValue;
+      if (m.getId() != null) {
+        binds.put(paramName, m.getId());
+        return "self." + fieldName + ".id = :" + paramName;
+      } else {
+        return "self." + fieldName + " IS NULL"; 
+      }
+    } else if (fieldValue instanceof List) { 
+      List<?> valueList = (List<?>) fieldValue;
+      if (CollectionUtils.isEmpty(valueList)) {
+        return "self." + fieldName + " IS NULL";
+      }
+      binds.put(paramName, fieldValue);
+      return "self." + fieldName + " IN :" + paramName;
+    } else {
+      binds.put(paramName, fieldValue);
+      return "self." + fieldName + " = :" + paramName;
+    }
+  }
+
+  private static Long getIdForExclusion(
+      Class<? extends Model> entity, String exclusionFieldName, Object exclusionFieldValue) {
+    if (!isValuePresent(exclusionFieldName) || !isValuePresent(exclusionFieldValue))
+      return null; 
     try {
+      String filterClause = "self." + exclusionFieldName + " = :val";
+     
       Query<? extends Model> q =
-          JPA.all(entity).filter("self.importId = :impId").bind("impId", csvImportId);
+          JPA.all(entity).filter(filterClause).bind("val", exclusionFieldValue);
       Model record = q.fetchOne();
       return record != null ? record.getId() : null;
     } catch (Exception e) {

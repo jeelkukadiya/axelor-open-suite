@@ -1,0 +1,810 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<csv-inputs xmlns="http://axelor.com/xml/ns/data-import"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://axelor.com/xml/ns/data-import http://axelor.com/xml/ns/data-import/data-import_7.4.xsd">
+
+  <!-- IMPORT DU PACKAGE 'AUTH' -->
+
+  <input file="auth_permission.csv" separator=";" type="com.axelor.auth.db.Permission"
+    search="self.name = :name">
+    <bind to="canRead" column="canRead"
+      check="canRead != null &amp;&amp; (canRead.toString().trim().toLowerCase() == 'true' || canRead.toString().trim().toLowerCase() == 'false')"
+      check-message="Can Read must be 'true' or 'false'"/>
+    <bind to="canWrite" column="canWrite"
+      check="canWrite != null &amp;&amp; (canWrite.toString().trim().toLowerCase() == 'true' || canWrite.toString().trim().toLowerCase() == 'false')"
+      check-message="Can Write must be 'true' or 'false'"/>
+    <bind to="canCreate" column="canCreate"
+      check="canCreate != null &amp;&amp; (canCreate.toString().trim().toLowerCase() == 'true' || canCreate.toString().trim().toLowerCase() == 'false')"
+      check-message="Can Create must be 'true' or 'false'"/>
+    <bind to="canRemove" column="canRemove"
+      check="canRemove != null &amp;&amp; (canRemove.toString().trim().toLowerCase() == 'true' || canRemove.toString().trim().toLowerCase() == 'false')"
+      check-message="Can Remove must be 'true' or 'false'"/>
+    <bind to="canExport" column="canExport"
+      check="canExport != null &amp;&amp; (canExport.toString().trim().toLowerCase() == 'true' || canExport.toString().trim().toLowerCase() == 'false')"
+      check-message="Can Export must be 'true' or 'false'"/>
+  </input>
+
+  <input file="auth_role.csv" separator=";" type="com.axelor.auth.db.Role"
+    search="self.name = :name">
+    <bind column="permissions" to="permissions" search="self.name in :permissions"
+      eval="permissions.split('\\|') as List"/>
+  </input>
+
+  <input file="auth_group.csv" separator=";" type="com.axelor.auth.db.Group"
+    search="self.code = :code">
+    <bind column="permissions" to="permissions" search="self.name in :permissions"
+      eval="permissions.split('\\|') as List"/>
+    <bind column="roles" to="roles" search="self.name in :roles"
+      eval="roles.split('\\|') as List"/>
+    <bind to="navigation" column="navigation"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.auth.db.Group', 'navigation', navigation)"
+      check-message="Navigation must be one of Visible, Hidden, or Collapse"/>
+  </input>
+
+  <input file="auth_group.csv" separator=";" type="com.axelor.auth.db.Group"
+    search="self.code = :code">
+    <bind column="permissions" to="permissions" search="self.name in :permissions"
+      eval="permissions.split('\\|') as List"/>
+    <bind column="roles" to="roles" search="self.name in :roles"
+      eval="roles.split('\\|') as List"/>
+    <bind column="menus_set" to="menus" search="self.name in :menus_set"
+      eval="menus_set.split('\\|') as List"/>
+    <bind to="navigation" column="navigation"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.auth.db.Group', 'navigation', navigation)"
+      check-message="Navigation must be one of Visible, Hidden, or Collapse"/>
+  </input>
+
+  <input file="meta_file.csv" separator=";" type="com.axelor.meta.db.MetaFile"
+    search="self.fileName = :fileName"/>
+
+  <!-- IMPORT DU PACKAGE 'BASE' -->
+
+  <input file="base_addressTemplate.csv" separator=";"
+    type="com.axelor.apps.base.db.AddressTemplate" search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required"/>
+    <bind to="engineSelect" column="engineSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.AddressTemplate', 'engineSelect', engineSelect)"
+      check-message="Engine select is required and must be 1 (String) or 2 (Groovy)"/>
+    <bind to="templateStr" column="templateStr"
+      check="templateStr != null &amp;&amp; !templateStr.toString().trim().empty"
+      check-message="Template content is required"/>
+  </input>
+
+  <input file="base_registrationNumberTemplate.csv" separator=";"
+    type="com.axelor.apps.base.db.RegistrationNumberTemplate" search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required"/>
+    <bind to="isRequiredForCompanies" column="isRequiredForCompanies"
+      check="isRequiredForCompanies != null &amp;&amp; (isRequiredForCompanies.toString().trim().toLowerCase() == 'true' || isRequiredForCompanies.toString().trim().toLowerCase() == 'false')"
+      check-message="isRequiredForCompanies must be true or false"/>
+    <bind to="requiredSize" column="requiredSize"
+      check="requiredSize == null || requiredSize == '' || (requiredSize as Integer) >= 1"
+      check-message="Required size must be at least 1"/>
+    <bind to="validationMethodSelect" column="validationMethodSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.RegistrationNumberTemplate','validationMethodSelect', validationMethodSelect)"
+      check-message="validationMethodSelect must be 'com.axelor.apps.base.service.partner.registrationnumber.RegistrationNumberValidatorFRA'"/>
+    <bind to="useSiren" column="useSiren"
+      check="useSiren != null &amp;&amp; (useSiren.toString().trim().toLowerCase() == 'true' || useSiren.toString().trim().toLowerCase() == 'false')"
+      check-message="useSiren must be true or false"/>
+    <bind to="sirenPos" column="sirenPos"
+      check="sirenPos == null || sirenPos == '' || (sirenPos as Integer) >= 1"
+      check-message="Siren position must be at least 1"/>
+    <bind to="useNic" column="useNic"
+      check="useNic != null &amp;&amp; (useNic.toString().trim().toLowerCase() == 'true' || useNic.toString().trim().toLowerCase() == 'false')"
+      check-message="useNic must be true or false"/>
+    <bind to="nicPos" column="nicPos"
+      check="nicPos == null || nicPos == '' || (nicPos as Integer) >= 1"
+      check-message="NIC position must be at least 1"/>
+    <bind to="useTaxNbr" column="useTaxNbr"
+      check="useTaxNbr != null &amp;&amp; (useTaxNbr.toString().trim().toLowerCase() == 'true' || useTaxNbr.toString().trim().toLowerCase() == 'false')"
+      check-message="useTaxNbr must be true or false"/>
+  </input>
+
+  <input file="base_economicArea.csv" separator=";"
+    type="com.axelor.apps.base.db.EconomicArea" search="self.importId = :importId">
+    <bind to="code" column="code"
+      check="com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.EconomicArea', new String[]{'code'}, new Object[]{code}, , 'importId', importId)"
+      check-message="EconomicArea code must be unique and not empty"/>
+    <bind to="name" column="name"
+      check="com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.EconomicArea', new String[]{'name'}, new Object[]{name}, 'importId', importId)"
+      check-message="EconomicArea name must be unique and not empty"/>
+  </input>
+
+
+  <input file="base_country.csv" separator=";" type="com.axelor.apps.base.db.Country"
+    search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Country name is required"/>
+    <bind to="alpha3Code" column="alpha3Code"
+      check="alpha3Code == null || alpha3Code.empty || alpha3Code.length() == 3"
+      check-message="Alpha-3 code must be 3 characters"/>
+    <bind to="alpha2Code" column="alpha2Code"
+      check="alpha2Code == null || alpha2Code.empty || alpha2Code.length() == 2"
+      check-message="Alpha-2 code must be 2 characters"/>
+    <bind to="numericCode" column="numericCode"
+      check="numericCode == null || numericCode.empty || numericCode.length() == 3"
+      check-message="Numeric code must be 3 characters"/>
+    <bind to="addressTemplate" column="addressTemplate_importId"
+      search="self.importId = :addressTemplate_importId"
+      check="addressTemplate_importId != null &amp;&amp; !addressTemplate_importId.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.AddressTemplate', 'importId', addressTemplate_importId)"
+      check-message="Address Template Import ID is required"/>
+  </input>
+
+  <input file="base_language.csv" separator=";" type="com.axelor.apps.base.db.Language"
+    search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required"/>
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty &amp;&amp; code.length() == 2"
+      check-message="Code is required and must be 2 characters"/>
+  </input>
+
+  <input file="base_localization.csv" separator=";"
+    type="com.axelor.apps.base.db.Localization" search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required"/>
+    <bind to="code" column="code" 
+      check="code != null &amp;&amp; !code.toString().trim().empty"
+      check-message="Code is required"/>
+    <bind to="country" column="country_importId" search="self.importId = :country_importId"
+      check="country_importId != null &amp;&amp; !country_importId.toString().trim().empty"
+      check-message="Country Import ID must be provided."/>
+    <bind to="language" column="language_importId" search="self.importId = :language_importId"
+      check="language_importId != null &amp;&amp; !language_importId.toString().trim().empty"
+      check-message="Language Import ID must be provided."/>
+  </input>
+
+  <input file="base_weeklyPlanning.csv" separator=";"
+    type="com.axelor.apps.base.db.WeeklyPlanning" search="self.importId  = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required"/>
+  </input>
+
+  <input file="base_dayPlanning.csv" separator=";" type="com.axelor.apps.base.db.DayPlanning"
+    search="self.importId  = :importId">
+    <bind to="nameSelect" column="nameSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.DayPlanning', 'nameSelect', nameSelect)"
+      check-message="Name Select must be one of the defined selections (e.g., monday - sunday)"/>
+  </input>
+
+  <input file="base_eventsPlanning.csv" type="com.axelor.apps.base.db.EventsPlanning"
+    separator=";" search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required"/>
+  </input>
+
+  <input file="base_eventsPlanningLine.csv" type="com.axelor.apps.base.db.EventsPlanningLine"
+    separator=";" search="self.importId = :importId">
+    <bind to="date" eval="call:com.axelor.csv.script.ImportDateTime:importDate(date)"  column="date" 
+      check="date != null &amp;&amp; !date.toString().trim().empty"
+      check-message="Date is required"/>
+    <bind to="year" eval="java.time.Year.now().getValue() + year.toInteger()" column="year"
+      check="year != null &amp;&amp; !year.toString().trim().empty" check-message="Year is required"/>
+  </input>
+
+  <input file="base_company.csv" separator=";" type="com.axelor.apps.base.db.Company"
+    search="self.importId = :importId" call="com.axelor.csv.script.ImportCompany:importCompany">
+    <bind to="name" column="name"
+      check="name != null &amp;&amp; !name.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.Company', new String[]{'name'}, new Object[]{name}, 'importId', importId)"
+      check-message="Name must be unique and not empty"/>
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.Company', new String[]{'code'}, new Object[]{code}, 'importId', importId)"
+      check-message="Code must be unique and not empty"/>
+  </input>
+
+  <input file="base_sequence.csv" separator=";" type="com.axelor.apps.base.db.Sequence"
+    search="self.importId = :importId" call="com.axelor.csv.script.ImportSequence:importSequence">
+    <bind to="yearlyResetOk" column="yearlyResetOk" eval="yearlyResetOk == '1' ? true : false"
+      if="yearlyResetOk"/>
+    <bind to="nextNum" column="nextNum" eval="nextNum?.empty ? '1' : nextNum"/>
+    <bind to="padding" column="padding" eval="padding?.empty ? '1' : padding"/>
+    <bind to="toBeAdded" column="toBeAdded" eval="toBeAdded?.empty ? '1' : toBeAdded"/>
+  </input>
+
+  <input file="base_birtTemplate.csv" separator=";"
+    type="com.axelor.apps.base.db.BirtTemplate" search="self.importId = :importId">
+    <bind to="metaModel" column="modelName" search="self.fullName = :modelName"/>
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required"/>
+    <bind to="format" column="format"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.BirtTemplate','format', format)"
+      check-message="Format must be one of pdf, xlsx, ods, xls, doc, docx, odt, html"/>
+    <bind to="templateEngineSelect" column="templateEngineSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.BirtTemplate','templateEngineSelect', templateEngineSelect)"
+      check-message="Template engine must be 1 or 2"/>
+  </input>
+
+  <input file="base_birtTemplateParameter.csv" separator=";"
+    type="com.axelor.apps.base.db.BirtTemplateParameter" search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required"/>
+    <bind to="type" column="type"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.BirtTemplateParameter','type', type)"
+      check-message="Type must be one of string, float, decimal, dateTime, boolean, integer, date, time"/>
+  </input>
+
+  <input file="base_printSetting.csv" separator=";"
+    type="com.axelor.apps.base.db.PrintingSettings" search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required"/>
+    <bind to="logoPositionSelect" column="logoPositionSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.PrintingSettings','logoPositionSelect', logoPositionSelect)"
+      check-message="Type must be one of string, float, decimal, dateTime, boolean, integer, date, time"/>
+  </input>
+
+  <input file="base_template.csv" separator=";" type="com.axelor.message.db.Template"
+    search="self.name = :name">
+    <bind column="printTemplateSet_importId" to="printTemplateSet"
+      search="self.importId in :printTemplateSet_importId"
+      eval="printTemplateSet_importId.split('\\|') as List" update="true"/>
+  </input>
+
+  <input file="base_team.csv" separator=";" type="com.axelor.team.db.Team"
+    search="self.importId = :importId">
+    <bind column="members" to="members" search="self.code in :members"
+      eval="members.split('\\|') as List"/>
+    <bind to="name" column="name"
+      check="name != null &amp;&amp; !name.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.team.db.Team', new String[]{'name'}, new Object[]{name}, 'importId', importId)"
+      check-message="Name is required and must be uniqe"/>
+  </input>
+
+  <input file="base_source.csv" separator=";" type="com.axelor.apps.base.db.Source"
+    search="self.code = :code"/>
+
+  <input file="base_addressTemplateLine.csv" separator=";"
+    type="com.axelor.apps.base.db.AddressTemplateLine" search="self.importId = :importId">
+    <bind to="metaField" column="metaField"
+      search="self.name = :metaField AND self.metaModel.name = :metaModel"
+      check="metaField != null &amp;&amp; !metaField.toString().trim().empty &amp;&amp; metaModel != null &amp;&amp; !metaModel.toString().trim().empty &amp;&amp;
+      com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.meta.db.MetaField', 'name', metaField) &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.meta.db.MetaModel', 'name', metaModel)"
+      check-message="Both 'Meta Field' and 'Meta Model' are required. Ensure a MetaField with the given name exists, and a MetaModel with the given name exists in the database. The combination of Meta Field and Meta Model must also be valid."/>
+  </input>
+
+  <input file="base_country.csv" separator=";" type="com.axelor.apps.base.db.Country"
+    search="self.importId = :importId"/>
+
+  <input file="base_region.csv" separator=";" type="com.axelor.apps.base.db.Region"
+    search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required"/>
+    <bind to="country" column="country_alpha3Code"
+      search="self.alpha3Code = :country_alpha3Code"/>
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.Region', new String[]{'code','country.alpha3Code'}, new Object[]{code, country_alpha3Code}, 'importId', importId)"
+      check-message="Department name is required and the combination of code and name must be unique"/>
+  </input>
+
+  <input file="base_departement.csv" separator=";" type="com.axelor.apps.base.db.Department">
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty"
+      check-message="Department code is required"/>
+    <bind to="name" column="name"
+      check="name != null &amp;&amp; !name.toString().trim().empty  &amp;&amp; com.axelor.csv.script.ImportCheck.checkUnique('com.axelor.apps.base.db.Department', new String[]{'code','name'}, new Object[]{code, name}, 'importId', importId)"
+      check-message="Department name is required and the combination of code and name must be unique"/>
+  </input>
+
+  <input file="base_indicator_generator.csv" separator=","
+    type="com.axelor.apps.base.db.IndicatorGenerator">
+    <bind to="requestLanguage" column="requestLanguage"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.IndicatorGenerator', 'requestLanguage', requestLanguage)"
+      check-message="Request language must be a valid selection value."/>
+  </input>
+
+  <input file="base_canton.csv" separator=";" type="com.axelor.apps.base.db.Canton"
+    search="self.code = :code">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required"/>
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.Canton', new String[]{'code'}, new Object[]{code}, 'importId', importId)"
+      check-message="Code is required and must be unique."/>
+    <bind to="artmin" column="artmin"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.Canton', 'artmin', artmin)"
+      check-message="ARTMIN must be a valid selection value."/>
+  </input>
+
+  <input file="base_city.csv" separator=";" type="com.axelor.apps.base.db.City"
+    search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="City Name is required"/>
+    <bind to="artmin" column="artmin"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.City', 'artmin', artmin)"
+      check-message="Artmin must be a valid selection value."/>
+    <bind to="country" column="country_alpha3Code"
+      search="self.alpha3Code = :country_alpha3Code" update="true"
+      check="com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Country', 'alpha3Code', country_alpha3Code)"
+      check-message="alpha3code must be a valide code"/>
+  </input>
+
+  <input file="base_address.csv" separator=";" type="com.axelor.apps.base.db.Address"
+    search="self.importId = :importId" call="com.axelor.csv.script.ImportAddress:importAddress">
+    <bind column="cityName" to="city" search="self.name = :cityName" update="true"/>
+    <bind to="country" column="country_alpha3Code"
+      search="self.alpha3Code = :country_alpha3Code"
+      check="com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Country', 'alpha3Code', country_alpha3Code)"
+      check-message="alpha3code must be a valide code"/>
+  </input>
+
+  <input file="base_currency.csv" separator=";" type="com.axelor.apps.base.db.Currency"
+    search="self.code = :code">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required"/>
+    <bind to="code" column="code" 
+      check="code != null &amp;&amp; !code.toString().trim().empty"
+      check-message="Code is required"/>
+    <bind to="codeISO" column="codeISO"
+      check="codeISO != null &amp;&amp; !codeISO.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.Currency', new String[]{'codeISO'}, new Object[]{codeISO}, 'code', code)"
+      check-message="ISO Code is required and must be unique."/>
+  </input>
+
+  <input file="base_unit.csv" separator=";" type="com.axelor.apps.base.db.Unit"
+    search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Unit Name is required."/>
+    <bind to="unitTypeSelect" column="unitTypeSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.Unit', 'unitTypeSelect', unitTypeSelect)"
+      check-message="Unit Type must be a valid selection value."/>
+  </input>
+
+  <input file="base_unitConversion.csv" separator=";"
+    type="com.axelor.apps.base.db.UnitConversion" search="self.importId = :importId">
+    <bind to="startUnit" column="startUnit_importId"
+      search="self.importId = :startUnit_importId"
+      check="startUnit_importId != null &amp;&amp; !startUnit_importId.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Unit', 'importId', startUnit_importId)"
+      check-message="From Unit Name is required and must refer to an existing Unit."/>
+    <bind to="endUnit" column="endUnit_importId" search="self.importId = :endUnit_importId"
+      check="endUnit_importId != null &amp;&amp; !endUnit_importId.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Unit', 'importId', endUnit_importId)"
+      check-message="To Unit Name is required and must refer to an existing Unit."/>
+    <bind to="coef" column="coef" 
+      check="coef != null &amp;&amp; !coef.toString().trim().empty"
+      check-message="Coefficient is required."/>
+    <bind to="typeSelect" column="typeSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.UnitConversion', 'typeSelect', typeSelect)"
+      check-message="Type must be a valid selection value."/>
+    <bind to="entitySelect" column="entitySelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.UnitConversion', 'entitySelect', entitySelect)"
+      check-message="Entity selection must be a valid value."/>
+  </input>
+
+  <input file="base_partnerCategory.csv" separator=";"
+    type="com.axelor.apps.base.db.PartnerCategory" search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required."/>
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty  &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.PartnerCategory', new String[]{'code'}, new Object[]{code}, 'importId', importId)"
+      check-message="Code is required and must be unique."/>
+  </input>
+
+  <input file="base_duration.csv" separator=";" type="com.axelor.apps.base.db.Duration"
+    search="self.importId = :importId">
+    <bind to="typeSelect" column="typeSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.Duration', 'typeSelect', typeSelect)"
+      check-message="Type (Month/days) must be a valid selection value."/>
+    <bind to="applicationTypeSelect" column="applicationTypeSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.Duration', 'applicationTypeSelect', applicationTypeSelect)"
+      check-message="Application Type must be a valid selection value."/>
+  </input>
+
+  <input file="base_partner.csv" separator=";" type="com.axelor.apps.base.db.Partner"
+    search="self.importId = :importId" call="com.axelor.csv.script.ImportPartner:importPartner">
+    <bind to="emailAddress" if="email &amp;&amp; email.trim() != ''"
+      search="self.partner.importId = :importId">
+      <bind to="address" column="email"/>
+    </bind>
+    <bind to="partnerAddressList"
+      search="self.address.importId = :address AND self.partner.importId = :importId"
+      if="address != null &amp;&amp; isContact == 'false'">
+      <bind to="address" search="self.importId = :address" update="true"/>
+      <bind to="isInvoicingAddr" eval="true"/>
+      <bind to="isDeliveryAddr" eval="true"/>
+      <bind to="isDefaultAddr" eval="true"/>
+    </bind>
+    <bind to="mainAddress" search="self.importId = :address" if="address != null" update="true"/>
+    <bind to="inPaymentMode" column="inPaymentMode.importId" if="false"/>
+    <bind to="outPaymentMode" column="outPaymentMode.importId" if="false"/>
+    <bind to="paymentCondition" column="paymentCondition.importId" if="false"/>
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required."/>
+    <bind to="partnerTypeSelect" column="partnerTypeSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.Partner', 'partnerTypeSelect', partnerTypeSelect)"
+      check-message="Partner Type must be a valid selection value."/>
+    <bind to="titleSelect" column="titleSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.Partner', 'titleSelect', titleSelect)"
+      check-message="Civility must be a valid selection value."/>
+  </input>
+
+  <!-- A BESOIN DE PARTNER -->
+  <input file="base_bank.csv" separator=";" type="com.axelor.apps.base.db.Bank">
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.Bank', new String[]{'code'}, new Object[]{code}, 'importId', importId)"
+      check-message="BIC (Bank Identifier) is required and must be unique."/>
+  </input>
+
+  <input file="base_bankAddress.csv" separator=";" type="com.axelor.apps.base.db.BankAddress"
+    search="self.importId = :importId">
+    <bind to="address" column="address"
+      check="address != null &amp;&amp; !address.toString().trim().empty"
+      check-message="SWIFT address is required."/>
+    <bind to="bank" column="bank_importId" search="self.importId = :bank_importId"
+      check="bank_importId != null &amp;&amp; !bank_importId.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Bank', 'importId', bank_importId)"
+      check-message="Bank Code must refer to an existing Bank."/>
+    <bind to="fullAddress"
+      eval="call:com.axelor.apps.base.service.BankAddressService:computeFullAddress(null, address, null)"/>
+  </input>
+
+  <input file="base_bankDetails.csv" separator=";" type="com.axelor.apps.base.db.BankDetails">
+    <bind to="partner" column="partner_importId" search="self.importId =:partner_importId"
+      update="true"/>
+    <bind to="isDefault" eval="true"/>
+    <bind to="iban" column="iban"
+      check="iban != null &amp;&amp; !iban.toString().trim().empty"
+      check-message="IBAN / BBAN is required."/>
+    <bind to="bank" column="bank_importId" search="self.importId = :bank_importId"
+      check="bank_importId != null &amp;&amp; !bank_importId.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Bank', 'importId', bank_importId)"
+      check-message="Bank BIC (importId) is required and must refer to an existing Bank."/>
+  </input>
+
+  <input file="base_company.csv" separator=";" type="com.axelor.apps.base.db.Company"
+    search="self.importId = :importId" call="com.axelor.csv.script.ImportCompany:importCompany">
+    <bind to="name" column="name"
+      check="name != null &amp;&amp; !name.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.Company', new String[]{'name'}, new Object[]{name}, 'importId', importId)"
+      check-message="Name must be unique and not empty"/>
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.Company', new String[]{'code'}, new Object[]{code}, 'importId', importId)"
+      check-message="Code must be unique and not empty"/>
+  </input>
+
+  <input file="base_year.csv" separator=";" type="com.axelor.apps.base.db.Year"
+    search="self.importId = :importId" call="com.axelor.csv.script.ImportYear:importYear">
+    <bind to="company" search="self.importId = :company_importId"/>
+    <bind to="fromDate" eval="call:com.axelor.csv.script.ImportDateTime:importDate(fromDate)"
+      column="fromDate"/>
+    <bind to="toDate" eval="call:com.axelor.csv.script.ImportDateTime:importDate(toDate)"
+      column="toDate"/>
+    <bind to="reportedBalanceDate"
+      eval="call:com.axelor.csv.script.ImportDateTime:importDate(reportedBalanceDate)"
+      column="reportedBalanceDate"/>
+  </input>
+
+  <input file="base_currencyConversionLine.csv" separator=";"
+    type="com.axelor.apps.base.db.CurrencyConversionLine" search="self.importId = :importId">
+    <bind to="appBase" column="appBase" search="self.app.code = :appBase" update="true"/>
+    <bind to="startCurrency" column="startCurrency_code"
+      search="self.code = :startCurrency_code"
+      check="startCurrency_code != null &amp;&amp; !startCurrency_code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Currency', 'code', startCurrency_code)"
+      check-message="Source Currency Code is required and must refer to an existing Currency."/>
+    <bind to="endCurrency" column="endCurrency_code" search="self.code = :endCurrency_code"
+      check="endCurrency_code != null &amp;&amp; !endCurrency_code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Currency', 'code', endCurrency_code)"
+      check-message="Destination Currency Code is required and must refer to an existing Currency."/>
+    <bind to="fromDate" eval="call:com.axelor.csv.script.ImportDateTime:importDate(fromDate)" column="fromDate" 
+      check="fromDate != null &amp;&amp; !fromDate.toString().trim().empty"
+      check-message="From Date is required."/>
+    <bind to="toDate" eval="call:com.axelor.csv.script.ImportDateTime:importDate(toDate)"
+      column="toDate"/>
+  </input>
+
+  <input file="base_companyDepartment.csv" separator=";"
+    type="com.axelor.apps.base.db.CompanyDepartment">
+    <bind column="id" to="importId"/>
+    <bind column="code" to="code"/>
+    <bind column="name" to="name"/>
+    <bind column="company" to="company"/>
+  </input>
+
+  <input file="base_productFamily.csv" separator=";"
+    type="com.axelor.apps.base.db.ProductFamily" search="self.code = :code">
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.ProductFamily', new String[]{'code'}, new Object[]{code}, 'importId', importId)"
+      check-message="Family Code is required and must be unique."/>
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Family Name is required."/>
+  </input>
+
+  <input file="base_productCategory.csv" separator=";"
+    type="com.axelor.apps.base.db.ProductCategory" search="self.code = :code">
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.ProductCategory', new String[]{'code'}, new Object[]{code}, 'importId', importId)"
+      check-message="Code is required and must be unique."/>
+    <bind to="name" column="name"
+      check="name != null &amp;&amp; !name.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.ProductCategory', new String[]{'name'}, new Object[]{name}, 'importId', importId)"
+      check-message="Name is required and must be unique."/>
+  </input>
+
+  <input file="base_product.csv" separator=";" type="com.axelor.apps.base.db.Product"
+    search="self.importId = :importId" call="com.axelor.csv.script.ImportProduct:importProduct">
+    <bind to="startDate" eval="call:com.axelor.csv.script.ImportDateTime:importDate(startDate)"
+      column="startDate"/>
+    <bind to="createdOn" eval="call:com.axelor.csv.script.ImportDateTime:importDate(startDate)"
+      column="startDate"/>
+    <bind to="netMass" eval="1" if="productTypeSelect == 'storable' &amp;&amp; netMass == null"/>
+    <bind to="grossMass" eval="1"
+      if="productTypeSelect == 'storable' &amp;&amp; grossMass == null"/>
+    <bind to="isShippingCostsProduct" column="isShippingCostsProduct"
+      eval="isShippingCostsProduct ? isShippingCostsProduct : 'false'"/>
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.Product', new String[]{'code'}, new Object[]{code}, 'importId', importId)"
+      check-message="Product Code is required and must be unique."/>
+    <bind to="productSubTypeSelect" column="productSubTypeSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.Product', 'productSubTypeSelect', productSubTypeSelect)"
+      check-message="Product Subtype must be a valid selection value."/>
+    <bind to="procurementMethodSelect" column="procurementMethodSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.Product', 'procurementMethodSelect', procurementMethodSelect)"
+      check-message="Procurement Method must be a valid selection value."/>
+    <bind to="productTypeSelect" column="productTypeSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.Product', 'productTypeSelect', productTypeSelect)"
+      check-message="Product Type must be a valid selection value."/>
+    <bind to="saleSupplySelect" column="saleSupplySelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.Product', 'saleSupplySelect', saleSupplySelect)"
+      check-message="Sale Supply default method must be a valid selection value."/>
+  </input>
+
+  <input file="base_productVariantAttr.csv" separator=";"
+    type="com.axelor.apps.base.db.ProductVariantAttr" search="self.code = :code">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required."/>
+    <bind to="code" column="code" 
+      check="code != null &amp;&amp; !code.toString().trim().empty"
+      check-message="Code is required."/>
+  </input>
+
+  <input file="base_productVariantValue.csv" separator=";"
+    type="com.axelor.apps.base.db.ProductVariantValue" search="self.code = :code">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required."/>
+    <bind to="code" column="code" 
+      check="code != null &amp;&amp; !code.toString().trim().empty"
+      check-message="Code is required."/>
+  </input>
+
+  <input file="base_productVariantConfig.csv" separator=";"
+    type="com.axelor.apps.base.db.Product" search="self.importId = :importId"
+    call="com.axelor.csv.script.ImportProduct:generateVariant">
+    <bind to="productVariantConfig">
+      <bind to="productVariantAttr1" column="productVariantAttr1"
+        search="self.code = :productVariantAttr1" update="true" if="productVariantAttr1 != null"/>
+      <bind to="productVariantAttr2" column="productVariantAttr2"
+        search="self.code = :productVariantAttr2" update="true" if="productVariantAttr2 != null"/>
+      <bind to="productVariantAttr3" column="productVariantAttr3"
+        search="self.code = :productVariantAttr3" update="true" if="productVariantAttr3 != null"/>
+      <bind to="productVariantAttr4" column="productVariantAttr4"
+        search="self.code = :productVariantAttr4" update="true" if="productVariantAttr4 != null"/>
+      <bind column="productVariantValue1" to="productVariantValue1Set"
+        search="self.code in :productVariantValue1" eval="productVariantValue1.split('\\|') as List"
+        if="productVariantValue1 != null"/>
+      <bind column="productVariantValue2" to="productVariantValue2Set"
+        search="self.code in :productVariantValue2" eval="productVariantValue2.split('\\|') as List"
+        if="productVariantValue2 != null"/>
+      <bind column="productVariantValue3" to="productVariantValue3Set"
+        search="self.code in :productVariantValue3" eval="productVariantValue3.split('\\|') as List"
+        if="productVariantValue3 != null"/>
+      <bind column="productVariantValue4" to="productVariantValue4Set"
+        search="self.code in :productVariantValue4" eval="productVariantValue4.split('\\|') as List"
+        if="productVariantValue4 != null"/>
+    </bind>
+  </input>
+
+  <input file="base_partner.csv" separator=";" search="self.importId = :importId"
+    update="true" type="com.axelor.apps.base.db.Partner">
+    <bind column="companySet_importId" to="companySet"
+      search="self.importId in :companySet_importId" eval="companySet_importId.split('\\|') as List"
+      update="true"/>
+    <bind to="mainPartner" search="self.importId = :mainPartner_importId" update="true"/>
+    <bind to="mainPartner" search="self.importId = :mainPartner_importId" update="true"
+      if="mainPartner_importId"/>
+    <bind to="inPaymentMode" column="inPaymentMode.importId" if="false"/>
+    <bind to="outPaymentMode" column="outPaymentMode.importId" if="false"/>
+    <bind to="paymentCondition" column="paymentCondition.importId" if="false"/>
+  </input>
+
+  <input file="base_partner.csv" separator=";" search="self.importId = :importId"
+    update="true" type="com.axelor.apps.base.db.Partner"
+    call="com.axelor.csv.script.ImportPartner:updateContacts">
+    <bind column="importId" to="importId"/>
+  </input>
+
+  <input file="base_company.csv" separator=";" type="com.axelor.apps.base.db.Company"
+    search="self.importId = :importId" update="true"
+    call="com.axelor.csv.script.UpdateAll:updatePeriod">
+    <bind column="importId" to="importId"/>
+  </input>
+
+  <input file="studio_appBase.csv" separator=";" type="com.axelor.studio.db.AppBase"
+    search="self.app.code = :code" update="true">
+    <bind to="companySpecificProductFieldsSet" column="companySpecificFieldName"
+      search="self.name IN :companySpecificFieldName AND self.metaModel.name = 'Product'"
+      eval="companySpecificFieldName.split('\\|') as List"/>
+    <bind to="app" column="code" search="self.code = :code"
+      check="code != null &amp;&amp; !code.toString().trim().empty"
+      check-message="App Code (for AppBase) is required and must exist."/>
+  </input>
+
+  <input file="auth_user.csv" separator=";" type="com.axelor.auth.db.User"
+    search="self.code = :code" call="com.axelor.csv.script.ImportUser:importUser">
+    <bind to="language" column="language"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.auth.db.User', 'language', language)"
+      check-message="Language must be a valid selection value."/>
+    <bind to="partner" column="partner_importId" search="self.importId = :partner_importId"
+      check="partner_importId != null &amp;&amp; !partner_importId.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Partner', 'importId', partner_importId)"
+      check-message="Partner Import ID must refer to an existing Partner if provided."/>
+    <bind to="stepStatusSelect" column="stepStatusSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.auth.db.User', 'stepStatusSelect', stepStatusSelect)"
+      check-message="Step Status must be a valid selection value."/>
+  </input>
+
+  <input file="account_taxType.csv" separator=";" type="com.axelor.apps.account.db.TaxType"
+    search="self.code = :code">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required."/>
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.account.db.TaxType', new String[]{'code'}, new Object[]{code}, 'importId', importId)"
+      check-message="Code is required and must be unique."/>
+    <bind to="typeSelect" column="typeSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.account.db.TaxType', 'typeSelect', typeSelect)"
+      check-message="Type is required and must be a valid selection value."/>
+  </input>
+
+  <input file="account_tax.csv" separator=";" type="com.axelor.apps.account.db.Tax"
+    search="self.code = :code">
+    <bind to="code" column="code"
+      check="code != null &amp;&amp; !code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.account.db.Tax', new String[]{'code'}, new Object[]{code}, 'importId', importId)"
+      check-message="Tax Code must be present and The combination of Code and Name must be unique."/>
+    <bind to="name" column="name"
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required field"/>
+    <bind to="taxType" column="taxType_importId" search="self.importId = :taxType_importId"
+      check="taxType_importId != null &amp;&amp; !taxType_importId.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.account.db.TaxType', 'importId', taxType_importId)"
+      check-message="Tax Type Import ID is required and must refer to an existing Tax Type."/>
+  </input>
+
+  <input file="account_taxLine.csv" separator=";" type="com.axelor.apps.account.db.TaxLine"
+    search="self.importId = :importId and self.tax.code = :tax_code">
+    <bind to="tax" search="self.code = :tax_code"/>
+    <bind to="startDate" column="startDate"
+      check="startDate != null &amp;&amp; !startDate.toString().trim().empty"
+      check-message="Application start Date is required."/>
+  </input>
+
+  <input file="account_tax.csv" separator=";" update="true" search="self.importId = :importId"
+    type="com.axelor.apps.account.db.Tax">
+    <bind to="activeTaxLine" search="self.importId = :_activeTaxLine AND self.tax.code = :code"
+      update="true"/>
+  </input>
+
+  <input file="account_accountManagement.csv" separator=";"
+    type="com.axelor.apps.account.db.AccountManagement" search="self.importId = :importId">
+    <bind search="self.importId = :company_id" to="company" update="true" column="company_id"
+      check="company_id != null &amp;&amp; !company_id.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Company', 'importId', company_id)"
+      check-message="Company Import ID is required and must refer to an existing Company."/>
+    <bind search="self.code = :cashAccount_code and self.company.importId = :company_id"
+      to="cashAccount" update="true" if="cashAccount_code"/>
+    <bind search="self.code = :saleAccount_code and self.company.importId = :company_id"
+      to="saleAccount" update="true" if="saleAccount_code"/>
+    <bind search="self.code = :purchaseAccount_code and self.company.importId = :company_id"
+      to="purchaseAccount" update="true" if="purchaseAccount_code"/>
+    <bind search="self.importId = :sequence_importId and self.company.importId = :company_id"
+      to="sequence" update="true" if="sequence_importId"/>
+    <bind search="self.importId = :journal_importId and self.company.importId = :company_id"
+      to="journal" update="true" if="journal_importId"/>
+    <bind search="self.importId = :bankDetails_importId" to="bankDetails" update="true"
+      if="bankDetails_importId"/>
+    <bind search="self.code in :saleTaxSet" to="saleTaxSet" column="saleTaxSet"
+      eval="saleTaxSet.split('\\|') as List"/>
+    <bind search="self.code in :purchaseTaxSet" to="purchaseTaxSet" column="purchaseTaxSet"
+      eval="purchaseTaxSet.split('\\|') as List"/>
+    <bind to="typeSelect" column="typeSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.account.db.AccountManagement', 'typeSelect', typeSelect)"
+      check-message="Type is required and must be a valid selection value."/>
+  </input>
+
+  <input file="meta_metaTranslation.csv" separator=";"
+    type="com.axelor.meta.db.MetaTranslation" search="self.key = :key AND self.language = :language"/>
+
+  <input file="base_citizenship.csv" separator=";" type="com.axelor.apps.base.db.Citizenship"/>
+
+  <input file="base_fileType.csv" type="com.axelor.apps.base.db.FileType" separator=";"/>
+
+  <input file="base_globalTrackingConfigurationLine.csv" separator=";"
+    type="com.axelor.apps.base.db.GlobalTrackingConfigurationLine">
+    <bind column="Model" to="metaModel" search="self.name = :Model"
+      check="Model != null &amp;&amp; !Model.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.meta.db.MetaModel', 'name', Model)"
+      check-message="Model (MetaModel Name) is required and must refer to an existing MetaModel."/>
+    <bind column="field" to="metaField"
+      search="(self.metaModel.name = :Model) AND (self.name = :field)"
+      check="field != null &amp;&amp; !field.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.meta.db.MetaField', 'name', field)"
+      check-message="Field (MetaField Name) is required and must refer to an existing MetaField."/>
+    <bind column="Creation" to="trackCreation" adapter="Boolean"
+      check="Creation != null &amp;&amp; !Creation.toString().trim().empty"
+      check-message="Track Creation is required."/>
+    <bind column="Deletion" to="trackDeletion" adapter="Boolean"
+      check="Deletion != null &amp;&amp; !Deletion.toString().trim().empty"
+      check-message="Track Deletion is required."/>
+    <bind column="Update" to="trackUpdate" adapter="Boolean"
+      check="Update != null &amp;&amp; !Update.toString().trim().empty"
+      check-message="Track Update is required."/>
+    <bind column="Export" to="trackExport" adapter="Boolean"
+      check="Export != null &amp;&amp; !Export.toString().trim().empty"
+      check-message="Track Export is required."/>
+    <bind column="Reading" to="trackReading" adapter="Boolean"
+      check="Reading != null &amp;&amp; !Reading.toString().trim().empty"
+      check-message="Track Reading is required."/>
+    <bind column="Condition" to="trackingCondition"/>
+    <bind to="appBase" search="self.id = '1'"/>
+    <bind column="Model" to="metaModel" search="self.name = :Model"
+      check="com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.GlobalTrackingConfigurationLine', new String[]{'metaModel.name', 'metaField.name'}, new Object[]{Model, field}, 'importId', importId)"
+      check-message="The combination of Meta Model and Meta Field must be unique."/>
+  </input>
+
+  <input file="base_mailBatch.csv" separator=";" type="com.axelor.apps.base.db.MailBatch"
+    search="self.code = :code">
+    <bind to="code" column="code"
+      check="com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.MailBatch', new String[]{'code'}, new Object[]{code}, 'importId', importId)"
+      check-message="Code is required and must be unique."/>
+    <bind to="actionSelect" column="actionSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.MailBatch', 'actionSelect', actionSelect)"
+      check-message="Action is required and must be a valid selection value."/>
+    <bind to="company" column="company_importId" search="self.importId = :company_importId"
+      check="company_importId != null &amp;&amp; !company_importId.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Company', 'importId', company_importId)"
+      check-message="Company Import ID is required and must refer to an existing Company."/>
+  </input>
+
+  <input file="base_main_activity.csv" separator=";"
+    type="com.axelor.apps.base.db.MainActivity" search="self.code= :code"/>
+
+  <input file="base_anonymizer.csv" type="com.axelor.apps.base.db.Anonymizer" separator=";">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required for Anonymizer."/>
+  </input>
+
+  <input file="base_anonymizerLine.csv" type="com.axelor.apps.base.db.AnonymizerLine"
+    separator=";">
+    <bind to="metaModel" column="metaModel" search="self.name = :metaModel"
+      check="metaModel != null &amp;&amp; !metaModel.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.meta.db.MetaModel', 'name', metaModel)"
+      check-message="Model to pseudonymize (MetaModel Name) is required and must refer to an existing MetaModel."/>
+    <bind to="metaField" column="metaField"
+      search="self.name = :metaField AND self.metaModel.name = :metaModel"
+      check="metaField != null &amp;&amp; !metaField.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.meta.db.MetaField', 'name', metaField)"
+      check-message="Field to pseudonymize (MetaField Name) is required and must refer to an existing MetaField."/>
+    <bind to="anonymizer" column="anonymizer_importId"
+      search="self.importId = :anonymizer_importId"/>
+    <bind to="useFakeData" column="useFakeData"/>
+  </input>
+
+  <input file="base_alternativeBarcodeType.csv" separator=";"
+    type="com.axelor.apps.base.db.AlternativeBarcodeType" search="self.importId = :importId">
+    <bind to="name" column="name" 
+      check="name != null &amp;&amp; !name.toString().trim().empty"
+      check-message="Name is required for Anonymizer."/>
+  </input>
+
+  <input file="base_blocking.csv" separator=";" type="com.axelor.apps.base.db.Blocking"
+    search="self.importId = :importId">
+    <bind to="blockingToDate"
+      eval="call:com.axelor.csv.script.ImportDateTime:importDate(blockingToDate)"
+      column="blockingToDate"/>
+    <bind to="blockingSelect" column="blockingSelect"
+      check="com.axelor.csv.script.ImportChecks.checkSelection('com.axelor.apps.base.db.Blocking', 'blockingSelect', blockingSelect)"
+      check-message="Blocking Type must be a valid selection value."/>
+  </input>
+</csv-inputs>

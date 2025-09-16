@@ -10,11 +10,11 @@
       check="name != null &amp;&amp; !name.toString().trim().empty"
       check-message="Test Name is required"/>
     <bind to="code" column="code"
-      check="com.axelor.csv.script.ImportChecks.isValuePresent(code) &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.Test', new String[]{'name', 'code'}, new Object[]{name, code}, importId)"
+      check="code != null &amp;&amp; !code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkUnique('com.axelor.apps.base.db.Test', new String[]{'name', 'code'}, new Object[]{name, code}, 'importId', importId)"
       check-message="Test Code is required and the combination of Name and Code must be unique"/>
     <bind to="relatedCountry" column="country_alpha3Code"
       search="self.alpha3Code = :country_alpha3Code"
-    	check="com.axelor.csv.script.ImportChecks.isValuePresent(country_alpha3Code) &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Country', 'alpha3Code', country_alpha3Code)"
+    	check="country_alpha3Code != null &amp;&amp; !country_alpha3Code.toString().trim().empty &amp;&amp; com.axelor.csv.script.ImportChecks.checkEntityExistsByField('com.axelor.apps.base.db.Country', 'alpha3Code', country_alpha3Code)"
       check-message="Related Country must be provided and should be valid in CSV"/>
     <bind to="isActive" column="isActive"
       check="isActive != null &amp;&amp; (isActive.toString().trim().toLowerCase() == 'true' || isActive.toString().trim().toLowerCase() == 'false')"
